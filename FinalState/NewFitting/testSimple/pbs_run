@@ -1,0 +1,47 @@
+#!/bin/tcsh
+#PBS -N HASPECT_SW
+#PBS -m abe 
+#PBS -M c.mullen.2@research.gla.ac.uk
+#PBS -l walltime=100:00:00
+#PBS -V
+#Make a directory to work in
+#mkdir -p /home/dglazier/$JOBNAME
+#cd /home/dglazier/$JOBNAME
+mkdir -p /scratch/chris/$JOBNAME
+cd /scratch/chris/$JOBNAME
+
+echo $FILEDIR
+echo $RUNMAC
+
+
+echo ' analysing bin ' $JOBNAME
+echo $HOST
+
+#set env variables
+setenv INPUT "Farm"$JOBNAME".root"
+setenv LOG "Farm"$JOBNAME".log"
+
+root -l -b -q --farm --hsfit '$RUNMAC'  >& $LOG
+
+ls -lhtr
+
+#copy output files to destination(Not copying across try just cp??)
+#scp Results* chris@npc74:$FILEDIR/.
+#scp Weights* chris@npc74:$FILEDIR/.
+#scp $LOG chris@npc74:$FILEDIR/.
+
+cp Results* $FILEDIR/.
+cp Weights* $FILEDIR/.
+cp $LOG $FILEDIR/.
+
+
+
+ls -lh 
+
+#tidy up
+cd ../
+rm -r $JOBNAME
+ls -lh
+echo 'all done and tidied up'
+
+

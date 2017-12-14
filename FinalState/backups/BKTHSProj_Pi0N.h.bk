@@ -1,0 +1,193 @@
+
+#ifndef THSPROJ_PI0N_h
+#define THSPROJ_PI0N_h
+
+#include "THSFinalState.h"
+#include "TLorentzVector.h"
+#include <vector>
+
+class THSProj_Pi0N : public THSFinalState{
+
+ public :
+  THSProj_Pi0N();
+  ~THSProj_Pi0N(){};
+
+  virtual Bool_t WorkOnEvent();
+
+  //Init functions
+  void Init_Iter0();
+  void Init_Iter1();
+  void Topo_0();
+  void Topo_1();
+  void Init_Generated();
+  //void Init_IterX();
+  //void Topo_X();
+
+  void Kinematics();
+  protected :
+  //Topology flags for this project
+  Int_t fTID_0=-1;
+  Int_t fTID_1=-1;
+  // Int_t fTID_=-1;
+ 
+  //Initial state
+  //TLorentzVector fBeam=TLorentzVector(0,0,10.6,10.6);
+  TLorentzVector fBeam;//=THSParticle(22);
+  TLorentzVector fTarget=TLorentzVector(0,0,0,1875.612);
+  TLorentzVector fInitialN;
+  //Final Particles
+  THSParticle fPhoton=THSParticle(-22);
+//  THSParticle fProton=THSParticle("proton");
+  THSParticle fProton=THSParticle(2212);
+  THSParticle fNeutron=THSParticle("neutron");
+  THSParticle fPion=THSParticle("pi0");
+  THSParticle fGamma1=THSParticle("gamma");
+  THSParticle fGamma2=THSParticle("gamma");
+ 
+  //For Kinematics
+  THSParticle *fNucleon=nullptr;
+
+  //Observables
+  Double_t f_t;
+  Double_t f_Q2;
+  Double_t f_W;
+  Double_t f_Pol;
+  Double_t fCMCosTh;
+  Double_t fCMPhi;
+
+  //Discriminators
+  Double_t fMissMass=0;
+  Double_t fM2gamma=0;
+  Double_t fInvMass=0;
+  Double_t fspecMass=0;
+  Double_t fTopologies=0;
+  Double_t fcoplanarity=0;
+  Double_t fCosth=0;
+  Double_t fW =0;
+  Double_t fBeamEnergy=0;
+  Double_t fTagTime=0;
+  Double_t fPol=0;
+  Int_t fPolState=0;
+  TVector3 fPolVec;
+  Double_t fTaggChannel=0;
+  Double_t fOpeningAngle;
+  Double_t fOpeningPhi;
+  Double_t fnucleonPhi;
+  Double_t fnucleonTheta;
+  Double_t fpi0Phi;
+  Double_t fpi0Theta;
+  Double_t fNucleonLabEnergy;
+  Double_t fNucleonLabEnergyb4;
+  Double_t fNucleonLabEnergyAft;
+  Double_t fCorrectedProtonLabEnergyb4=0;
+  Double_t fPionLabEnergy;
+  Double_t fOpeningAngle2;
+  Double_t fOpeningAngle3;
+  Double_t fOpeningAngle4;
+  Double_t fCMNucPhi;
+  Double_t fCMNucCosTh;
+  Double_t fEnergyErrs; 
+  Double_t fDetErrs;
+  Double_t fGammaOneTime=0;
+  Double_t fGammaTwoTime=0;
+  Double_t fGammaDiffTime=0;
+  Double_t fNucleonTime=0;
+  Double_t fNucleonTagDiffTime=0;
+  Double_t fGammaOneTagDiffTime=0;
+  Double_t fDetector=-1;
+
+//Kinematics Issue so separate for each channel.
+//  Double_t fCMPhiTopoNeut;
+//  Double_t fCosthTopoNeut=0;
+//  Double_t fWTopoNeut =0;
+//  Double_t fOpeningAngle2TopoNeut;
+
+//  Double_t fCMPhiTopoProt;
+//  Double_t fCosthTopoProt=0;
+//  Double_t fWTopoProt =0;
+//  Double_t fOpeningAngle2TopoProt;
+
+
+  //Additional 4-Vectors
+  TLorentzVector fspectator;
+  TLorentzVector fMissP4;
+  TLorentzVector fNuclvec;
+  TLorentzVector fPionvec;
+
+
+  //For QFEnergy function
+  Double_t massProton=938.272;
+  Double_t massNeutron=939.565;
+  Double_t massTarget = 1875.612;  //LD2
+
+
+
+
+
+   public :
+  virtual void FinalStateOutTree(TTree* tree);
+
+  //______________________________________________________________________________
+  Double_t ProtonELossCorrection(Double_t ProtTheta, Double_t NaIDeposit)
+  {
+    //Mikhails proton energy correction for the polarimeter Mainz beamtime of Aug 16
+    // Returns kinetic energy of proton from the deposit in the sodium iodide and proton theta angle(in radians?)  (test case of theta=90deg or pi/2 rads gives no change in Ekin)
+
+    Double_t E_kin=NaIDeposit+(201.915-57.9314*sin(ProtTheta))*(exp((-0.000800067-0.00451967*sin(ProtTheta))*NaIDeposit))+(-82.3023+23.2409*sin(ProtTheta));
+
+    return (E_kin);
+
+  }
+
+
+  //______________________________________________________________________________
+  Double_t CalcQFThreeBodyRecoilPartT(Double_t beamE, TLorentzVector p4Meson, TLorentzVector p4Part,
+				      Double_t mTarg, Double_t mPart, Double_t mSpec)
+  {
+    // Calculate the kinetic energy of the recoil participant with mass 'mPart'
+    // in meson photoproduction off a target with mass 'mTarg' with beam energy
+    // 'beamE' in a quasi-free three-body-decay:
+    //
+    // gamma + Target(Participant + Spectator) -> Participant + Spectator + Meson
+    //
+    // Use the reconstructed theta and phi angles in the 4-vector of the
+    // participant 'p4Part' and the fully reconstructed 4-vector
+    // of the meson 'p4Meson' to calculate the kinetic energy of the recoil
+    // participant. The spectator mass is 'mSpec'.
+
+    // set input kinematics variables
+    Double_t mesonPx = p4Meson.Px();
+    Double_t mesonPy = p4Meson.Py();
+    Double_t mesonPz = p4Meson.Pz();
+    Double_t mesonE  = p4Meson.E();
+
+    Double_t partTheta = p4Part.Theta();
+    Double_t partPhi   = p4Part.Phi();
+
+    // calculate terms
+    Double_t a = mesonE - beamE - mTarg;
+    Double_t b = (mesonE + mPart - beamE - mTarg) * (mesonE + mPart - beamE - mTarg)
+      - mSpec * mSpec
+      - mesonPx * mesonPx
+      - mesonPy * mesonPy
+      - mesonPz * mesonPz
+      - beamE * beamE
+      + 2 * beamE * mesonPz;
+    Double_t c =   mesonPx * TMath::Sin(partTheta) * TMath::Cos(partPhi)
+      + mesonPy * TMath::Sin(partTheta) * TMath::Sin(partPhi)
+      + (mesonPz - beamE ) * TMath::Cos(partTheta);
+
+    Double_t quadEquA = a*a - c*c;
+    Double_t quadEquB = a*b - 2*c*c*mPart;
+    Double_t quadEquC = b*b / 4;
+
+    return (-quadEquB + TMath::Sqrt(quadEquB*quadEquB - 4*quadEquA*quadEquC)) / (2*quadEquA);
+  }
+
+
+
+
+
+};
+
+#endif //ifdef THSProj_Pi0N

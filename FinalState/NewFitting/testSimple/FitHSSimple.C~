@@ -1,0 +1,39 @@
+//Run with 
+//root --hsfit FitHSSimple.C
+{
+
+  THSsPlot* RF=new THSsPlot("Simple");
+  RF->SetOutDir("outTagTimeNeutronChannel6Files/");
+  RF->SetBinnedFit(); //For parameter fits do binned chi2
+  ///////////////////////////////Load Variables
+  RF->LoadVariable("TagTime[45,80]");//should be same name as variable in tree  
+  RF->LoadAuxVars("BeamEnergy[500,600]");
+  RF->LoadAuxVars("Topo[-1,0]");
+  RF->LoadAuxVars("Coplanarity[-180,180]");//should be same name as variable in tree 
+
+  /////////////////////////////Make Model Signal
+  //RF->Factory("Gaussian::Signal( TagTime, SIMm[65,45,80], SIMw[10,0,100] )");
+  RF->Factory("BifurGauss::Signal(TagTime,SIMm[65,45,80], SIMwL[10,0,100], SIMwR[10,0,100]  )");
+  RF->LoadSpeciesPDF("Signal");
+
+
+  ////////////////////////////////Additional background
+  RF->Factory("Chebychev::BG(TagTime,{a0[-0.1,-1,1],a1[0.1,-1,1],a2[0.1,-1,1],a3[0.1,-1,1] ,a4[0.1,-1,1]      })");
+  RF->LoadSpeciesPDF("BG");
+
+   ///////////////////////////Load Data
+  TChain chain("HSParticles");
+  chain.AddFile("/w/work14/chris/LatestAnalysisRuns/Data/DataJul17/HaspectOutput/TestMulti/Dev4.0Files6PhysicsAll.root");
+  RF->SetIDBranchName("fUID");//This is not needed if all events from tree go into dataset, i.e. the variable ranges do not cut any events. It is safer to have it...
+  //import to RooFit
+  RF->LoadDataSet(&chain);
+  gBenchmark->Start("Binned");
+  RF->FitAndStudy(20); //argument gives number of parameter fits to perform
+  //Do some other stuff before saving weights
+//  RF->DrawTreeVar("Phi",100,-180,180);
+//  RF->DrawTreeVar("InvMass",100,0,1000);
+  gBenchmark->Stop("Binned");
+  gBenchmark->Print("Binned");
+  RF->GetWeights()->Save();
+
+}
