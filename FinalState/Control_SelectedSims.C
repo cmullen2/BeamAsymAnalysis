@@ -7,12 +7,11 @@
   //HSout("FULL_PATH_OUTPUT_FILE_DIR_OR_FILE");
  // HSMacPath("/home/chris/HAPECT6/Projects/Pi0N/");
   HSfinal("THSProj_Pi0N");
-//  HSin("/w/work14/chris/LatestAnalysisRuns/Data/DataJul17/ChrisOutput/MixedParaPerp/Physics_CBTaggTAPS_14957.root");
-  HSin("/w/work1/home/chris/LatestAnalysisRuns/Sims/SimsOct17/ChrisOutput/Deuterium/Flat/*");//Physics_A2Geant_DeutNoPol_9Fla.root");
-//HSin("/w/work14/chris/LatestAnalysisRuns/Data/DataJul17/ChrisOutput/TestingJunk/Physics_*");
- // HSin("/w/work14/chris/LatestAnalysisRuns/Data/DataJul17/ChrisOutput/EmptyTarget/MixedParaPerp/Physics_*");
-//  HSin("/w/work14/chris/LatestAnalysisRuns/Sims/SimsJan17/ChrisOutput/Deuterium/BeamAsym/Mixed/");
-  HSout("/w/work1/home/chris/LatestAnalysisRuns/Sims/SimsOct17/HaspectOutput/Deuterium/Flat/FourthAttempt/");
+
+  HSin("/w/work1/home/chris/LatestAnalysisRuns/Sims/SimsOct17/ChrisOutput/Deuterium/Flat/Physics_A2Geant_DeutNoPol*");
+ 
+
+  HSout("/w/work1/home/chris/LatestAnalysisRuns/Sims/SimsOct17/HaspectOutput/Deuterium/Flat/NinthAttempt/");
 
   
 
