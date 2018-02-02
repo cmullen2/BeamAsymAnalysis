@@ -44,8 +44,8 @@ class THSProj_Pi0N : public THSFinalState{
   THSParticle fGamma1=THSParticle("gamma");
   THSParticle fGamma2=THSParticle("gamma");
 //fGenerated Particles
-  THSParticle fSpec=THSParticle(2122); //Neutron spectator
-  THSParticle fPart=THSParticle(2212); //Proton participant
+  THSParticle fSpec; //=THSParticle(2122); //Neutron spectator
+  THSParticle fPart; //=THSParticle(2212); //Proton participant
 
 
  
@@ -96,6 +96,8 @@ class THSProj_Pi0N : public THSFinalState{
   Double_t fCMNucCosTh;
   Double_t fEnergyErrs; 
   Double_t fDetErrs;
+  Double_t fDomFuncErrs;
+  Double_t fAnyErrs;
   Double_t fGammaOneTime=0;
   Double_t fGammaTwoTime=0;
   Double_t fGammaDiffTime=0;
@@ -147,6 +149,12 @@ TLorentzVector AftMikNucleon;
   Double_t fGamma1Theta; 
   Double_t fGamma2Theta;
 
+//TO be Deleted
+ TLorentzVector fPionP4;
+ TLorentzVector fPhotonP4;
+ Double_t fDCorrect;
+ Double_t fWII;
+ TLorentzVector fProduc; 
 
    public :
   virtual void FinalStateOutTree(TTree* tree);

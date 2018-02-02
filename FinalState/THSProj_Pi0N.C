@@ -36,9 +36,9 @@ THSProj_Pi0N::THSProj_Pi0N(){
 
 
 void THSProj_Pi0N::Init_Generated(){
-  return;
+  //return; //THIS LINE IS NEEDED FOR NON SIMULATION DATA
   if(!THSFinalState::frGenParts) return;
-  if(THSFinalState::frGenParts->size()!=4) {fGoodEvent=kFALSE;return;}
+  if(THSFinalState::frGenParts->size()!=5) {fGoodEvent=kFALSE;return;}
   //Fill our data member particles
   //User is responsible for indicing right
   //comes from order in generated file (e.g LUND)
@@ -70,6 +70,7 @@ void THSProj_Pi0N::Init_Generated(){
     //Sets the truth values using the p4 of the particle etc.
     fSpec.SetTruth(frGenParts->at(0));
     fPart.SetTruth(frGenParts->at(1));
+    fProton.SetTruth(frGenParts->at(1));
     fGamma1.SetTruth(frGenParts->at(2));
     fGamma2.SetTruth(frGenParts->at(3));
     fPhoton.SetTruth(frGenParts->at(4));
@@ -142,7 +143,6 @@ void THSProj_Pi0N::Topo_0(){
 
   //Dominik's function
   fNucleonLabEnergy = CalcQFThreeBodyRecoilPartT(fPhoton.P4().E(), fPion.P4(), fProton.P4(), massTarget, massProton,massNeutron);
-
  
   //Set up a generic nucleon variable to be used in kinematics
   fNucleon = &fProton;
@@ -185,6 +185,14 @@ void THSProj_Pi0N::Kinematics(){
   }
   
 
+  if(fNucleonLabEnergy<0){
+    fDomFuncErrs=-1;
+  }
+  else{
+    fDomFuncErrs=0;
+  }
+
+
   // Timing
   fTagTime=fPhoton.Time();
   fGammaOneTime=fGamma1.Time();
@@ -192,24 +200,24 @@ void THSProj_Pi0N::Kinematics(){
   fNucleonTime=fNucleon->Time();
   fNucleonTagDiffTime = fNucleonTime - fTagTime;
 
- //Adjustment for jitter, common start/stop
+  //Adjustment for jitter, common start/stop
   if(  fGamma1.Detector()<8 && fGamma2.Detector()<8)fGammaAveTagDiffTime= fPion.Time() - fTagTime;
   if(  fGamma1.Detector()>7 && fGamma2.Detector()>7)fGammaAveTagDiffTime= -fPion.Time() - fTagTime;
   if(  fGamma1.Detector()>7 && fGamma2.Detector()<8)fGammaAveTagDiffTime= -fGamma1.Time() - fTagTime;
   if(  fGamma1.Detector()<8 && fGamma2.Detector()>7)fGammaAveTagDiffTime= -fGamma2.Time() - fTagTime;
 
   //Needs adjustment for jitter, common start/stop
-//  if(  fGamma1.Detector()>7 || fGamma2.Detector()>7){ //if one in TAPs
-//    if(fGamma1.Detector()<8){//if Gam1 in CB
-//      fGammaAveTagDiffTime= fGamma1.Time() - fTagTime;
-//    } 
-//    else if(fGamma2.Detector()<8){ //if Gam2 in CB
-//      fGammaAveTagDiffTime= fGamma2.Time() - fTagTime;
-//    }
-//    else{ //if both in TAPS
-//      fGammaAveTagDiffTime=  fGammaAveTagDiffTime- fOffset;
-//    }
-// }
+  //  if(  fGamma1.Detector()>7 || fGamma2.Detector()>7){ //if one in TAPs
+  //    if(fGamma1.Detector()<8){//if Gam1 in CB
+  //      fGammaAveTagDiffTime= fGamma1.Time() - fTagTime;
+  //    } 
+  //    else if(fGamma2.Detector()<8){ //if Gam2 in CB
+  //      fGammaAveTagDiffTime= fGamma2.Time() - fTagTime;
+  //    }
+  //    else{ //if both in TAPS
+  //      fGammaAveTagDiffTime=  fGammaAveTagDiffTime- fOffset;
+  //    }
+  // }
 
 
 
@@ -221,13 +229,16 @@ void THSProj_Pi0N::Kinematics(){
   if(std::isnan(fNucleonLabEnergy) ){
     fEnergyErrs =  -1;
     fNucleon->P4p()->SetE(fNucleon->P4p()->E()+fNucleon->PDGMass());  //Not sure if 1000 needed see if still in GeV.
+    //  if(fNucleon->P4p()->E()<0) cout <<" Negatives  " << fNucleon->P4p()->E()   << endl;
   }
   else{
     fEnergyErrs = 0;
     fNucleon->P4p()->SetE(fNucleonLabEnergy + fNucleon->PDGMass() ); //issue with phi due to this.
     //  fNucleon->P4p()->SetE(fNucleonLabEnergy); 
+    // if(fNucleon->P4p()->E()<0) cout <<" Negatives  " << fNucleon->P4p()->E()   << "Lab E " << fNucleonLabEnergy << " PDG MASS " << fNucleon->PDGMass() <<" Topo  " << fTopologies  <<endl;
   }
 
+  //if(fNucleon->P4p()->E()<0) cout <<" Negatives  " << fNucleon->P4p()->E()   << endl;
 
   TLorentzVector AftDomNucleon;
   AftDomNucleon.SetPxPyPzE(fProton.P4p()->Px(),fProton.P4p()->Py(),fProton.P4p()->Pz(),fProton.P4p()->E());
@@ -236,8 +247,9 @@ void THSProj_Pi0N::Kinematics(){
   TLorentzVector AftPDGNucleon;
   AftPDGNucleon.SetPxPyPzE(fProton.P4p()->Px(),fProton.P4p()->Py(),fProton.P4p()->Pz(),fProton.P4p()->E());
 
+  if(fDetErrs==0) fNucleon->TakePDGMassFromE(); //Hits with no cb or taps will cause vector stretch error if not dealt with by fDetErrs
 
-  fNucleon->TakePDGMassFromE(); //Tvector3 vector can't be stretched error here on this line. sqrt(E^2 - M^2) so E=M or E<M? Due to not adding PDG mass on ,Removed for testing purposes for a minute. NEUTRON CASE
+  //  fNucleon->TakePDGMassFromE(); //Tvector3 vector can't be stretched error here on this line. sqrt(E^2 - M^2) so E=M or E<M? Due to not adding PDG mass on ,Removed for testing purposes for a minute. NEUTRON CASE
   fNucleonLabEnergyAft = fNucleon->P4p()->E();
 
 
@@ -291,21 +303,28 @@ void THSProj_Pi0N::Kinematics(){
   fDetector = fNucleon->Detector();
 
 
+  fPionP4 = fPion.P4();
+  fPhotonP4 = fPhoton.P4();
+
+
   //  fKine.SetGammaTarget((&fPhoton)->P4(),fInitialN);
   fKine.SetGammaTarget(fPhoton.P4(),fInitialN);
   fKine.SetMesonBaryon(fPion.P4(),fNucleon->P4());
   fKine.PhotoCMDecay();
   fCMPhi=(fKine.Phi())*TMath::RadToDeg() ;
   fCosth=fKine.CosTheta(); 
-  fW = fKine.W();
+  fW = fKine.W();//Commented out only as a test so far
 
   fOpeningAngle2 =( TMath::ACos(fCosth) -    (fNucleon->P4().Theta() )  ) ;
 
 
 
-}
+//Attempting to get W correct
 
-void THSProj_Pi0N::FinalStateOutTree(TTree* tree){
+  fProduc=fFreeProton + fPhoton.P4() ;
+  fWII =fW - fProduc.M() ;
+  
+
 
 
   if(std::isnan(fCoplanarity)){
@@ -313,63 +332,106 @@ void THSProj_Pi0N::FinalStateOutTree(TTree* tree){
     fCoplanarity=0;
   }
 
+
+  if(std::isnan(fCMPhi)){
+    cout << fCoplanarity << " coplan " <<fCMPhi <<" phi " << " Costh " <<  fCosth <<" DetErrs " <<fDetErrs << " EnergyErrs " <<fEnergyErrs<< " Cone Angle " << fConeAngle <<"  "  << endl;// " UID " << UID <<endl;
+    
+  }
+  if(TMath::IsNaN(fCMPhi)){
+    cout << "Inside the TMath version " << endl;
+    cout << "Beam Energy " <<fBeamEnergy << " Detector of Nucleon " << fDetector   <<" nucleon lab energy before "<< fNucleonLabEnergyb4 <<" after " << fNucleonLabEnergyAft  << endl;
+  }
+
+  if(fDetErrs==-1 || fEnergyErrs==-1 || fDomFuncErrs==-1){
+    fAnyErrs=-1;
+  }
+  else{
+    fAnyErrs=0;
+  }
+
+
+}
+
+void THSProj_Pi0N::FinalStateOutTree(TTree* tree){
+
+
+  /*  if(std::isnan(fCoplanarity)){
+      cout << fCoplanarity << " coplan " <<fCMPhi <<" phi " << " Costh " <<  fCosth << endl;// " UID " << UID <<endl;
+      fCoplanarity=0;
+      }
+
+
+      if(std::isnan(fCMPhi)){
+      cout << fCoplanarity << " coplan " <<fCMPhi <<" phi " << " Costh " <<  fCosth <<" DetErrs " <<fDetErrs << " EnergyErrs " <<fEnergyErrs<< " Cone Angle " << fConeAngle <<"  "  << endl;// " UID " << UID <<endl;
+    
+      }
+      if(TMath::IsNaN(fCMPhi)){
+      cout << "Inside the TMath version " << endl;
+
+      }*/
+
+
   THSFinalState::fFinalTree=tree;
   //tree->Branch("Final",&fFinal);
-  tree->Branch("MissMass",&fMissMass,"MissMass/D"); //Missing Mass of Participant
-  tree->Branch("M2gamma",&fM2gamma,"M2gamma/D");  
+
+  //Needed For Fitting
+  tree->Branch("Topo",&fTopologies,"Topo/D");//Two topologies proton particapant and neutron part,pi0 
   tree->Branch("Phi",&fCMPhi,"Phi/D");   //COM Phi angle of meson
   tree->Branch("Costh",&fCosth,"Costh/D");  //COM costheta angle of meson 
-  tree->Branch("Topo",&fTopologies,"Topo/D");//Two topologies proton particapant and neutron part,pi0 
-  tree->Branch("InvMass",&fInvMass,"InvMass/D"); //Inv mass of meson
-  tree->Branch("SpecMass",&fSpecMass,"SpecMass/D"); //Spectator mass
   tree->Branch("SpecMom",&fSpecMom,"SpecMom/D"); //Spectator mass
-  tree->Branch("MissNucleon",&fMissNucleon,"MissNucleon/D"); //Spectator mass
   tree->Branch("Coplanarity",&fCoplanarity,"Coplanarity/D"); //Coplanarity between pi0 and part. nucl.
-  tree->Branch("W",&fW,"W/D"); 
-
-  tree->Branch("Detector",&fDetector,"Detector/D"); //Detector hit by participant, NaI etc. see Goat for code conv. 
   tree->Branch("BeamEnergy",&fBeamEnergy,"BeamEnergy/D"); 
-  tree->Branch("TagTime",&fTagTime,"TagTime/D"); //Tagger Time //Test Case
-  tree->Branch("PolState",&fPolState,"PolState/I"); //PolState +-1 or 0 ,Perp Para moeller
+  tree->Branch("W",&fW,"W/D"); 
+  tree->Branch("InvMass",&fInvMass,"InvMass/D"); //Inv mass of meson
   tree->Branch("Pol",&fPol,"Pol/D"); //Polarisation mag. also has state encompassed
   tree->Branch("TaggChannel",&fTaggChannel,"TaggChannel/D"); //Tagger Channels
-
-  tree->Branch("NucleonLabEnergy",&fNucleonLabEnergy,"NucleonLabEnergy/D"); //E from Dom's func.
-  tree->Branch("NucleonLabEnergyb4",&fNucleonLabEnergyb4,"NucleonLabEnergyb4/D"); //E from before Dom's func.
-  tree->Branch("NucleonLabEnergyAft",&fNucleonLabEnergyAft,"NucleonLabEnergyAft/D"); //E from after Dom's func.
-  tree->Branch("CorrectedProtonLabEnergyb4",&fCorrectedProtonLabEnergyb4,"CorrectedProtonLabEnergyb4/D");
-  tree->Branch("PionLabEnergy",&fPionLabEnergy,"PionLabEnergy/D"); //E from Dom's func.
-
-
-
-  tree->Branch("NucleonPhi",&fNucleonPhi,"NucleonPhi/D");
-  tree->Branch("NucleonTheta",&fNucleonTheta,"NucleonTheta/D");
-  tree->Branch("Pi0Phi",&fPi0Phi,"Pi0Phi/D");
-  tree->Branch("Pi0Theta",&fPi0Theta,"Pi0Theta/D");
-  tree->Branch("OpeningAngle2",&fOpeningAngle2,"OpeningAngle2/D");
   tree->Branch("ConeAngle",&fConeAngle,"ConeAngle/D");
-  tree->Branch("ConePhi",&fConePhi,"ConePhi/D");
-
-
   tree->Branch("EnergyErrs",&fEnergyErrs,"EnergyErrs/D");  // Error indicator for Dom's func.
   tree->Branch("DetErrs",&fDetErrs,"DetErrs/D"); // Error indicator for NO CB or TAPS hit
-
-  tree->Branch("GammaOneTime",&fGammaOneTime,"GammaOneTime/D"); 
-  tree->Branch("GammaTwoTime",&fGammaTwoTime,"GammaTwoTime/D"); 
-
-  tree->Branch("NucleonTime",&fNucleonTime,"NucleonTime/D"); 
-  tree->Branch("NucleonTagDiffTime",&fNucleonTagDiffTime,"NucleonTagDiffTime/D"); 
-
   tree->Branch("GammaAveTagDiffTime",&fGammaAveTagDiffTime,"GammaAveTagDiffTime/D"); 
+  tree->Branch("DomFuncErrs",&fDomFuncErrs,"DomFuncErrs/D"); // Negative Energy from Doms Function indicator 
+  tree->Branch("AnyErrs",&fAnyErrs,"AnyErrs/D"); // Any Error given from the above three 
+  tree->Branch("MissMass",&fMissMass,"MissMass/D"); //Missing Mass of Participant
+  tree->Branch("Correct",&fCorrect,"Correct/I"); 
+  tree->Branch("DCorrect",&fDCorrect,"DCorrect/D"); //Does GenSim match TopoSim
+  tree->Branch("SpecMass",&fSpecMass,"SpecMass/D"); //Spectator mass
+  tree->Branch("WII",&fWII); 
 
-  tree->Branch("Gamma1Detector",&fDetectorGamma1,"Gamma1Detector/D"); 
-  tree->Branch("Gamma2Detector",&fDetectorGamma2,"Gamma2Detector/D"); 
-  tree->Branch("Gamma1Phi",&fGamma1Phi,"Gamma1Phi/D"); 
-  tree->Branch("Gamma2Phi",&fGamma2Phi,"Gamma2Phi/D"); 
-  tree->Branch("Gamma1Theta",&fGamma1Theta,"Gamma1Theta/D"); 
-  tree->Branch("Gamma2Theta",&fGamma2Theta,"Gamma2Theta/D"); 
+
+  //Not Needed for Fitting yet
+  //  tree->Branch("M2gamma",&fM2gamma,"M2gamma/D");  
+  //  tree->Branch("MissNucleon",&fMissNucleon,"MissNucleon/D"); //Spectator mass
+//  tree->Branch("Detector",&fDetector,"Detector/D"); //Detector hit by participant, NaI etc. see Goat for code conv. 
+  //  tree->Branch("TagTime",&fTagTime,"TagTime/D"); //Tagger Time //Test Case
+  //  tree->Branch("PolState",&fPolState,"PolState/I"); //PolState +-1 or 0 ,Perp Para moeller
+  //  tree->Branch("NucleonLabEnergy",&fNucleonLabEnergy,"NucleonLabEnergy/D"); //E from Dom's func.
+  //  tree->Branch("NucleonLabEnergyb4",&fNucleonLabEnergyb4,"NucleonLabEnergyb4/D"); //E from before Dom's func.
+  //  tree->Branch("NucleonLabEnergyAft",&fNucleonLabEnergyAft,"NucleonLabEnergyAft/D"); //E from after Dom's func.
+  //  tree->Branch("CorrectedProtonLabEnergyb4",&fCorrectedProtonLabEnergyb4,"CorrectedProtonLabEnergyb4/D");
+  //  tree->Branch("PionLabEnergy",&fPionLabEnergy,"PionLabEnergy/D"); //E from Dom's func.
+  //  tree->Branch("NucleonPhi",&fNucleonPhi,"NucleonPhi/D");
+  //  tree->Branch("NucleonTheta",&fNucleonTheta,"NucleonTheta/D");
+  //  tree->Branch("Pi0Phi",&fPi0Phi,"Pi0Phi/D");
+  //  tree->Branch("Pi0Theta",&fPi0Theta,"Pi0Theta/D");
+  //  tree->Branch("OpeningAngle2",&fOpeningAngle2,"OpeningAngle2/D");
+  //  tree->Branch("ConePhi",&fConePhi,"ConePhi/D");
+  //  tree->Branch("GammaOneTime",&fGammaOneTime,"GammaOneTime/D"); 
+  //  tree->Branch("GammaTwoTime",&fGammaTwoTime,"GammaTwoTime/D"); 
+  //  tree->Branch("NucleonTime",&fNucleonTime,"NucleonTime/D"); 
+  //  tree->Branch("NucleonTagDiffTime",&fNucleonTagDiffTime,"NucleonTagDiffTime/D"); 
+//  tree->Branch("Gamma1Detector",&fDetectorGamma1,"Gamma1Detector/D"); 
+//  tree->Branch("Gamma2Detector",&fDetectorGamma2,"Gamma2Detector/D"); 
+  //  tree->Branch("Gamma1Phi",&fGamma1Phi,"Gamma1Phi/D"); 
+  //  tree->Branch("Gamma2Phi",&fGamma2Phi,"Gamma2Phi/D"); 
+  //  tree->Branch("Gamma1Theta",&fGamma1Theta,"Gamma1Theta/D"); 
+  //  tree->Branch("Gamma2Theta",&fGamma2Theta,"Gamma2Theta/D"); 
 
 
+//  tree->Branch("InitialN",&fInitialN); 
+//  tree->Branch("Photon",&fPhotonP4); 
+//  tree->Branch("Pion",&fPionP4); 
+//  tree->Branch("Nucleon",&fNucleon); 
+//  tree->Branch("Produc",&fProduc); 
 
 }
 Bool_t THSProj_Pi0N::WorkOnEvent(){
@@ -382,7 +444,7 @@ Bool_t THSProj_Pi0N::WorkOnEvent(){
     //if reconstructed Find the detected particles in this event
     //    if(FindInclusiveTopology()==-1) {fGoodEvent=kFALSE;return fIsPermutating0=kFALSE;}
     //if(FindTopology()==-1) {fGoodEvent=kFALSE;return fIsPermutating0=kFALSE;}
-    if(FindInclusiveTopology(-22)==-1){fGoodEvent=kFALSE;return fIsPermutating0=kFALSE;} //This line still needed?
+    if(FindInclusiveTopology(-22)==-1){fGoodEvent=kFALSE;return fIsPermutating0=kFALSE;} 
 
     //Do they correspond to a defined topology?
     else if(fCurrTopo==fTID_0) Topo_0();
@@ -393,13 +455,26 @@ Bool_t THSProj_Pi0N::WorkOnEvent(){
     Init_Generated();
   }
 
+  //cout<<"MAsses"<<fPhoton.TruthP4().M()<<"  " << fProton.TruthP4().M()<< "  " <<fPhoton.TruthP4().Rho() << " " <<fProton.TruthP4().Rho() <<" " <<fPhoton.ResRho()<<"  "<< fProton.ResRho()<< "Proton Rho Res "  <<endl;
+
   //Calc kinematics
   Kinematics();
   
   //Check if assigned vectors agree with true generated
   //Simulation only
   THSFinalState::CheckTruth();
-  
+  //SIMS NEXT TWO LINES NEEDED BUT CRASH DATA FILES
+  fGamma1.SetTruth(frGenParts->at(3));
+  fGamma2.SetTruth(frGenParts->at(2));  
+
+  THSFinalState::CheckTruth();
+
+
+  //For Sims
+  //fDCorrect=fCorrect -1;
+  //For Prod, Emp
+  fDCorrect=fCorrect;
+
   //Can do some checks if event is worth writing or not
   //if()fGoodEvent=kTRUE;
   //else() fGoodEvent =kFALSE;
