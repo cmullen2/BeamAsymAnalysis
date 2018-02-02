@@ -28,7 +28,7 @@
 #include <TStyle.h>
 
 
-void Selected::Begin(TTree * /*tree*/)
+void Selected::Begin(TTree *tree)
 {
    THSOutput::HSBegin(fInput,fOutput);
    // The Begin() function is called at the start of the query.
@@ -38,15 +38,15 @@ void Selected::Begin(TTree * /*tree*/)
    TString option = GetOption();
 //If you want to split histograms into different kinematic bins, include and configure the lines below
    fBins=new THSBins("HSBins");
-   fBins->AddAxis("Egamma",24,200,800);
+   fBins->AddAxis("Eg",24,200,800);
    fBins->AddAxis("Costh",20,-1,1);
 //   fBins->AddAxis("AXIS2NAME",10,-1,1);
-//   if(!fInput) fInput=new TList();
+   if(!fInput) fInput=new TList();
    fInput->Add(fBins);
 
 }
 
-void Selected::SlaveBegin(TTree * /*tree*/)
+void Selected::SlaveBegin(TTree *tree)
 {
    // The SlaveBegin() function is called after the Begin() function.
    // When running with PROOF SlaveBegin() is called on each slave server.
@@ -70,9 +70,13 @@ void Selected::SlaveBegin(TTree * /*tree*/)
    THSHisto::LoadCut("Polp");
    THSHisto::LoadCut("Polm");
    THSHisto::LoadCut("ProtonChannelPolm");
+   THSHisto::LoadCut("ProtonChannelPolmandCuts");
    THSHisto::LoadCut("ProtonChannelPolp");
+   THSHisto::LoadCut("ProtonChannelPolpandCuts");
    THSHisto::LoadCut("NeutronChannelPolm");
+   THSHisto::LoadCut("NeutronChannelPolmandCuts");
    THSHisto::LoadCut("NeutronChannelPolp");
+   THSHisto::LoadCut("NeutronChannelPolpandCuts");
    THSHisto::LoadHistograms();
 
 }
@@ -132,7 +136,7 @@ void Selected::HistogramList(TString sLabel){
   //now define all histograms and add to Output
   //label includes kinematic bin and additional cut name
   // e.g fOutput->Add(MapHist(new TH1F("Mp1","M_{p1}",100,0,2)));
-  fOutput->Add(MapHist(new TH1F("MissMass","M_{miss}",100,0,2000)));
+  fOutput->Add(MapHist(new TH1F("MissMass","M_{miss}",100,0,4000)));
   fOutput->Add(MapHist(new TH1F("Phi","Phi",100,-180,180)));
   fOutput->Add(MapHist(new TH1F("Timing","Timing",100,-100,0)));
   fOutput->Add(MapHist(new TH1F("Coplanarity","Coplanarity",100,-180,180)));
@@ -167,14 +171,18 @@ void Selected::FillHistograms(TString sCut){
 //void THSProj_Pi0N::UserProcess(){
 void Selected::UserProcess(){
 
-   if(fBins) fCurrBin=fBins->FindBin(fPhoton.P4p()->E());//if fBins is defined need to give this meaningful arguments
+   if(fBins) fCurrBin=fBins->FindBin(fBeamEnergy,fCosth);//if fBins is defined need to give this meaningful arguments
    FillHistograms("Cut1");
    if(fPolState>0) FillHistograms("Polp");
    if(fPolState<0) FillHistograms("Polm");
-   if(fPolState<0 && fTopologies==1 && fGammaAveTagDiffTime<-50&& fGammaAveTagDiffTime>-60 && fDetErrs==0 && fCoplanarity>-50 && fCoplanarity<50 && fInvMass>120 && fInvMass<150 ) FillHistograms("ProtonChannelPolm");
-   if(fPolState>0 && fTopologies==1 && fGammaAveTagDiffTime<-50&& fGammaAveTagDiffTime>-60 && fDetErrs==0 && fCoplanarity>-50 && fCoplanarity<50 && fInvMass>120 && fInvMass<150 ) FillHistograms("ProtonChannelPolp");
-   if(fPolState<0 && fTopologies==-1 && fGammaAveTagDiffTime<-50&& fGammaAveTagDiffTime>-60 && fDetErrs==0 && fCoplanarity>-50 && fCoplanarity<50 && fInvMass>120 && fInvMass<150 ) FillHistograms("NeutronChannelPolm");
-   if(fPolState>0 && fTopologies==-1 && fGammaAveTagDiffTime<-50&& fGammaAveTagDiffTime>-60 && fDetErrs==0 && fCoplanarity>-50 && fCoplanarity<50 && fInvMass>120 && fInvMass<150 ) FillHistograms("NeutronChannelPolp");
+   if(fPolState<0 && fTopologies==1 && fDetErrs==0 && fEnergyErrs==0 ) FillHistograms("ProtonChannelPolm");
+   if(fPolState>0 && fTopologies==1 && fDetErrs==0 && fEnergyErrs==0 ) FillHistograms("ProtonChannelPolp");
+   if(fPolState<0 && fTopologies==-1 && fDetErrs==0 && fEnergyErrs==0 ) FillHistograms("NeutronChannelPolm");
+   if(fPolState>0 && fTopologies==-1 && fDetErrs==0 && fEnergyErrs==0 ) FillHistograms("NeutronChannelPolp");
+   if(fPolState<0 && fTopologies==1 && fGammaAveTagDiffTime<-50&& fGammaAveTagDiffTime>-60 && fDetErrs==0 && fCoplanarity>-50 && fCoplanarity<50 && fInvMass>120 && fInvMass<150 ) FillHistograms("ProtonChannelPolmandCuts");
+   if(fPolState>0 && fTopologies==1 && fGammaAveTagDiffTime<-50&& fGammaAveTagDiffTime>-60 && fDetErrs==0 && fCoplanarity>-50 && fCoplanarity<50 && fInvMass>120 && fInvMass<150 ) FillHistograms("ProtonChannelPolpandCuts");
+   if(fPolState<0 && fTopologies==-1 && fGammaAveTagDiffTime<-50&& fGammaAveTagDiffTime>-60 && fDetErrs==0 && fCoplanarity>-50 && fCoplanarity<50 && fInvMass>120 && fInvMass<150 ) FillHistograms("NeutronChannelPolmandCuts");
+   if(fPolState>0 && fTopologies==-1 && fGammaAveTagDiffTime<-50&& fGammaAveTagDiffTime>-60 && fDetErrs==0 && fCoplanarity>-50 && fCoplanarity<50 && fInvMass>120 && fInvMass<150 ) FillHistograms("NeutronChannelPolpandCuts");
    // cout<<fPhoton.P4p()->E()<<endl;
 
    THSOutput::HSProcessFill();

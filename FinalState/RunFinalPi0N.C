@@ -11,7 +11,7 @@
   
 //Production
 //  dm->Init("/w/work14/chris/LatestAnalysisRuns/Data/DataJul17/ChrisOutput/Para/","HSParticles");
-  dm->Init("/w/work14/home/chris/LatestAnalysisRuns/Data/DataJul17/ChrisOutput/Para/Physics_CBTaggTAPS_14919.root","HSParticles");
+  dm->Init("/w/work1/home/chris/LatestAnalysisRuns/Data/DataJul17/ChrisOutput/Para/Physics_CBTaggTAPS_14919.root","HSParticles");
 //  Simulation 
 // dm->Init("/w/work14/chris/LatestAnalysisRuns/Sims/SimsJan17/ChrisOutput/Deuterium/BeamAsym/PosPolarisation/Physics_A2OutPosPol.root","HSParticles");
 //Empty

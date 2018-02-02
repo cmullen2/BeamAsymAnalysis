@@ -1,10 +1,24 @@
 {
   //optional Set input file directory, could be done with --hsin or setenv HSIN
-  HSin("/w/work14/home/chris/LatestAnalysisRuns/Data/DataJul17/ChrisOutput/MixedParaPerp/");
+
+
+//Prod Data
+//  HSin("/w/work1/home/chris/LatestAnalysisRuns/Data/DataJul17/ChrisOutput/MixedParaPerp/");
+  //HSin("/w/work1/home/chris/LatestAnalysisRuns/Data/DataJul17/ChrisOutput/MixedParaPerp/Physics_CBTaggTAPS_14962.root");
+  
+//Empty Target  
+  HSin("/w/work1/home/chris/LatestAnalysisRuns/Data/DataJul17/ChrisOutput/EmptyTarget/MixedParaPerp/Physics_CBTaggTAPS_15812.root");
+
+
   //optional set ouput directory or file.
   //Directory=>1 out file for every in file
   //file=> 1 total output file
-  HSout("/w/work14/home/chris/LatestAnalysisRuns/Data/DataJul17/HaspectOutput/TestMulti/Dev14.0Files20PhysicsAll.root");
+  
+//Prod Data
+//  HSout("/w/work1/home/chris/LatestAnalysisRuns/Data/DataJul17/HaspectOutput/TestMulti/Dev15.0Files20PhysicsAll.root");
+
+//Empty Target
+  HSout("/w/work1/home/chris/LatestAnalysisRuns/Data/DataJul17/HaspectOutput/EmptyTarget/Dev1.0Files1PhysicsAll.root");
 //  HSMacPath("ADDITIONALMACROPATH_WHEREPROJECTIS");
   HSfinal("THSProj_Pi0N");
   
