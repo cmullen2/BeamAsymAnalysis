@@ -75,6 +75,7 @@ class THSProj_Pi0N : public THSFinalState{
   Double_t fBeamEnergy=0;
   Double_t fTagTime=0;
   Double_t fPol=0;
+  Double_t fPolStateD=0;
   Int_t fPolState=0;
   TVector3 fPolVec;
   Double_t fTaggChannel=0;
@@ -97,6 +98,7 @@ class THSProj_Pi0N : public THSFinalState{
   Double_t fEnergyErrs; 
   Double_t fDetErrs;
   Double_t fDomFuncErrs;
+  Double_t fPolErrs;
   Double_t fAnyErrs;
   Double_t fGammaOneTime=0;
   Double_t fGammaTwoTime=0;
@@ -107,6 +109,10 @@ class THSProj_Pi0N : public THSFinalState{
   Double_t fGammaTwoTagDiffTime=0;
   Double_t fGammaAveTagDiffTime=0;
   Double_t fDetector=-1;
+  Double_t fDCorrect;
+  Double_t fWII;
+
+
 
 //Kinematics Issue so separate for each channel.
 //  Double_t fCMPhiTopoNeut;
@@ -152,8 +158,6 @@ TLorentzVector AftMikNucleon;
 //TO be Deleted
  TLorentzVector fPionP4;
  TLorentzVector fPhotonP4;
- Double_t fDCorrect;
- Double_t fWII;
  TLorentzVector fProduc; 
 
    public :

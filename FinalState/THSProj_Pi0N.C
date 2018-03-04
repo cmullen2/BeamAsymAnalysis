@@ -36,7 +36,7 @@ THSProj_Pi0N::THSProj_Pi0N(){
 
 
 void THSProj_Pi0N::Init_Generated(){
-  //return; //THIS LINE IS NEEDED FOR NON SIMULATION DATA
+ // return; //THIS LINE IS NEEDED FOR NON SIMULATION DATA
   if(!THSFinalState::frGenParts) return;
   if(THSFinalState::frGenParts->size()!=5) {fGoodEvent=kFALSE;return;}
   //Fill our data member particles
@@ -294,8 +294,34 @@ void THSProj_Pi0N::Kinematics(){
   fTaggChannel = fPhoton.Detector();
   fPolState=fPhoton.EdgePlane();
   fPolVec=fPhoton.Vertex();
-  if (fPolState==1) fPol=fPolVec.X();
-  if (fPolState==-1) fPol=fPolVec.Y();
+  fPol=fPolVec.X();   //Edge plane =1,-1,0  describes Para,Perp or Moeller( not necess in that order)
+ 
+
+//  if (fPolState==1)fPol=fPolVec.X();
+//  if (fPolState==-1)fPol=fPolVec.Y();
+
+
+
+
+//cout << fPolState << "Pol State and vector X and Y "<< fPolVec.X() <<"   " << fPolVec.Y() <<" fPol  "<< fPol <<endl;
+//if(fPolState==-1)fPol=fPol*-1;  //A correction to previoulsy incorrect Goat code!! 
+//cout << fPolState << "Pol State and vector X and Y "<< fPolVec.X() <<"   " << fPolVec.Y() <<"  fPol " << fPol <<endl;
+
+
+//Double for Fitting in Roofit as a binvar
+//fPolStateD = fPhoton.EdgePlane(); FOR PROD DATA
+fPolStateD = -1; // For  Sim Data so that have both polarisation for binning for fitting
+
+
+
+  //Zero Polarisation 
+  if (fPol==0){
+	fPolErrs=-1; 
+}
+else{
+	fPolErrs=0;
+
+}
 
 
 
@@ -328,21 +354,21 @@ void THSProj_Pi0N::Kinematics(){
 
 
   if(std::isnan(fCoplanarity)){
-    cout << fCoplanarity << " coplan " <<fCMPhi <<" phi " << " Costh " <<  fCosth << endl;// " UID " << UID <<endl;
+  //  cout << fCoplanarity << " coplan " <<fCMPhi <<" phi " << " Costh " <<  fCosth << endl;// " UID " << UID <<endl;
     fCoplanarity=0;
   }
 
 
   if(std::isnan(fCMPhi)){
-    cout << fCoplanarity << " coplan " <<fCMPhi <<" phi " << " Costh " <<  fCosth <<" DetErrs " <<fDetErrs << " EnergyErrs " <<fEnergyErrs<< " Cone Angle " << fConeAngle <<"  "  << endl;// " UID " << UID <<endl;
+    //cout << fCoplanarity << " coplan " <<fCMPhi <<" phi " << " Costh " <<  fCosth <<" DetErrs " <<fDetErrs << " EnergyErrs " <<fEnergyErrs<< " Cone Angle " << fConeAngle <<"  "  << endl;// " UID " << UID <<endl;
     
   }
   if(TMath::IsNaN(fCMPhi)){
-    cout << "Inside the TMath version " << endl;
-    cout << "Beam Energy " <<fBeamEnergy << " Detector of Nucleon " << fDetector   <<" nucleon lab energy before "<< fNucleonLabEnergyb4 <<" after " << fNucleonLabEnergyAft  << endl;
+    //cout << "Inside the TMath version " << endl;
+    //cout << "Beam Energy " <<fBeamEnergy << " Detector of Nucleon " << fDetector   <<" nucleon lab energy before "<< fNucleonLabEnergyb4 <<" after " << fNucleonLabEnergyAft  << endl;
   }
 
-  if(fDetErrs==-1 || fEnergyErrs==-1 || fDomFuncErrs==-1){
+  if(fDetErrs==-1 || fEnergyErrs==-1 || fDomFuncErrs==-1  ){
     fAnyErrs=-1;
   }
   else{
@@ -395,7 +421,7 @@ void THSProj_Pi0N::FinalStateOutTree(TTree* tree){
   tree->Branch("Correct",&fCorrect,"Correct/I"); 
   tree->Branch("DCorrect",&fDCorrect,"DCorrect/D"); //Does GenSim match TopoSim
   tree->Branch("SpecMass",&fSpecMass,"SpecMass/D"); //Spectator mass
-  tree->Branch("WII",&fWII); 
+  tree->Branch("WII",&fWII,"WII/D"); 
 
 
   //Not Needed for Fitting yet
@@ -403,7 +429,9 @@ void THSProj_Pi0N::FinalStateOutTree(TTree* tree){
   //  tree->Branch("MissNucleon",&fMissNucleon,"MissNucleon/D"); //Spectator mass
 //  tree->Branch("Detector",&fDetector,"Detector/D"); //Detector hit by participant, NaI etc. see Goat for code conv. 
   //  tree->Branch("TagTime",&fTagTime,"TagTime/D"); //Tagger Time //Test Case
-  //  tree->Branch("PolState",&fPolState,"PolState/I"); //PolState +-1 or 0 ,Perp Para moeller
+    tree->Branch("PolState",&fPolState,"PolState/I"); //PolState +-1 or 0 ,Perp Para moeller
+    tree->Branch("PolStateD",&fPolStateD,"PolStateD/D"); //PolState +-1 or 0 ,Perp Para moeller
+    tree->Branch("PolErrs",&fPolErrs,"PolErrs/D"); // Any Error given from the above three 
   //  tree->Branch("NucleonLabEnergy",&fNucleonLabEnergy,"NucleonLabEnergy/D"); //E from Dom's func.
   //  tree->Branch("NucleonLabEnergyb4",&fNucleonLabEnergyb4,"NucleonLabEnergyb4/D"); //E from before Dom's func.
   //  tree->Branch("NucleonLabEnergyAft",&fNucleonLabEnergyAft,"NucleonLabEnergyAft/D"); //E from after Dom's func.
@@ -459,7 +487,10 @@ Bool_t THSProj_Pi0N::WorkOnEvent(){
 
   //Calc kinematics
   Kinematics();
-  
+if(fGammaAveTagDiffTime<-100 || fGammaAveTagDiffTime>100){
+fGoodEvent=kFALSE;
+
+}  
   //Check if assigned vectors agree with true generated
   //Simulation only
   THSFinalState::CheckTruth();
@@ -470,10 +501,10 @@ Bool_t THSProj_Pi0N::WorkOnEvent(){
   THSFinalState::CheckTruth();
 
 
-  //For Sims
-  //fDCorrect=fCorrect -1;
-  //For Prod, Emp
-  fDCorrect=fCorrect;
+  //For Sims Temporary fix!
+  fDCorrect=fCorrect -1;
+  //For Prod, Emp (Fix this at some stage! Needed so that they give the same value for cuts during fitting)
+  //fDCorrect=fCorrect;
 
   //Can do some checks if event is worth writing or not
   //if()fGoodEvent=kTRUE;
