@@ -5,12 +5,12 @@
   ske->SetNewTree();
 //  ske->SetAppendTree();
 //  ske->SetWeights();
-  HSfinal("THSProj_Pi0N");
+  HSfinal("THSProj_PiMinusP");
 //  ske->SetProject(HSproj(),kTRUE); 
   ske->SetFinalState(HSfinal(),kTRUE); 
  // ske->CreateSelector("Selected","/w/work14/chris/ForBonn/Neutron/ChrisGoatOut/Perp/TestHaspect/Physics_CBTaggTAPS_15156.root","Particles");
 //  ske->CreateSelector("Selected","/w/work14/chris/Run101016/ChrisOutput/Para/LinPolTests/RootinoPhi/Physics_CBTaggTAPS_14919.root","HSParticles");
-  ske->CreateSelector("Selected","/w/work14/chris/LatestAnalysisRuns/Data/DataJul17/ChrisOutput/MixedParaPerp/Physics_CBTaggTAPS_14975.root","HSParticles");
+  ske->CreateSelector("PimP","/w/work1/home/chris/LatestAnalysisRuns/Data/DataDec17ChargedPion/ChrisOutput/Perp/Physics_CBTaggTAPS_14975.root","HSParticles");
  //creating the project class with perms
   //Set the detected particle combinations you will analyse
 //  sk->SetProjectTopo("pi+:pi-,pi+:pi-:pi0,proton:pi+:pi-:pi0");
