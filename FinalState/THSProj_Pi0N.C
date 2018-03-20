@@ -22,8 +22,9 @@ THSProj_Pi0N::THSProj_Pi0N(){
  
   //Set final state
   fFinal.push_back(&fPhoton);
-  fFinal.push_back(&fProton);
-  //fFinal.push_back(&fNeutron);
+ // fFinal.push_back(&fProton);
+
+  fFinal.push_back(&fNeutron);  //Is this needed for the fGen stuff for the truth values to expect a correct final state and produce correct correlations
   //fFinal.push_back(&fPion);
   fFinal.push_back(&fGamma1);
   fFinal.push_back(&fGamma2);
@@ -70,7 +71,8 @@ void THSProj_Pi0N::Init_Generated(){
     //Sets the truth values using the p4 of the particle etc.
     fSpec.SetTruth(frGenParts->at(0));
     fPart.SetTruth(frGenParts->at(1));
-    fProton.SetTruth(frGenParts->at(1));
+//    fProton.SetTruth(frGenParts->at(1));  //Proton Channel only, what do I do for neutron channel?
+    fNeutron.SetTruth(frGenParts->at(1)); //Neutron Channel?
     fGamma1.SetTruth(frGenParts->at(2));
     fGamma2.SetTruth(frGenParts->at(3));
     fPhoton.SetTruth(frGenParts->at(4));
@@ -168,6 +170,7 @@ void THSProj_Pi0N::Topo_1(){
   fNucleonLabEnergy = CalcQFThreeBodyRecoilPartT(fPhoton.P4().E(), fPion.P4(), fNeutron.P4(), massTarget, massNeutron,massProton);
  
   //Set up a generic nucleon variable to be used in kinematics
+  fNeutron.SetPDGcode(2112);
   fNucleon = &fNeutron;
 }
 
@@ -176,7 +179,7 @@ void THSProj_Pi0N::Kinematics(){
   if(!THSFinalState::fGoodEvent) return;//don't do calculations
   //Do calculations if Good Event
 
-  //  Test for ball or taps hit
+  //  Test for ball or taps hit Make this a detector based selection
   if(fNucleon->P4p()->Phi()==0 && fNucleon->P4p()->Theta()==0){
     fDetErrs= -1;
   }

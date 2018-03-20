@@ -9,12 +9,12 @@
   HSfinal("THSProj_Pi0N");
 
  // HSin("/w/work1/home/chris/LatestAnalysisRuns/Sims/SimsOct17/ChrisOutput/Deuterium/Flat/Physics_A2Geant_DeutNoPol*");
- // HSin("/w/work1/home/chris/LatestAnalysisRuns/Sims/SimsOct17/ChrisOutput/Deuterium/NPi0/Physics_A2Geant_DeutNoPol*");
-  HSin("/w/work1/home/chris/LatestAnalysisRuns/Sims/SimsOct17/ChrisOutput/Deuterium/PPi0/Physics_A2Geant_DeutNoPol_153*");
+  HSin("/w/work1/home/chris/LatestAnalysisRuns/Sims/SimsOct17/ChrisOutput/Deuterium/NPi0/Physics_A2Geant_DeutNoPol*");
+ // HSin("/w/work1/home/chris/LatestAnalysisRuns/Sims/SimsOct17/ChrisOutput/Deuterium/NPi0/Physics_A2Geant_DeutNoPol_0*");
  // HSin("/w/work1/home/chris/LatestAnalysisRuns/Sims/SimsOct17/ChrisOutput/Deuterium/PPi0/Physics_A2Geant_DeutNoPol*");
  
 
-  HSout("/w/work1/home/chris/LatestAnalysisRuns/Sims/SimsOct17/HaspectOutput/Deuterium/PPi0/FirstAttempt/");
+  HSout("/w/work1/home/chris/LatestAnalysisRuns/Sims/SimsOct17/HaspectOutput/Deuterium/NPi0/FirstAttempt/");
 
   
 

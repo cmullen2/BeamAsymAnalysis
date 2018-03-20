@@ -39,7 +39,7 @@ class THSProj_Pi0N : public THSFinalState{
   THSParticle fPhoton=THSParticle(-22);
 //  THSParticle fProton=THSParticle("proton");
   THSParticle fProton=THSParticle(2212);
-  THSParticle fNeutron=THSParticle("neutron");
+  THSParticle fNeutron=THSParticle("neutron");  //Needed as neutron since Particles branch has no neutrons only photons but other channel has charge so prot is identified.
   THSParticle fPion=THSParticle("pi0");
   THSParticle fGamma1=THSParticle("gamma");
   THSParticle fGamma2=THSParticle("gamma");
