@@ -8,7 +8,7 @@
   //create datamanager
   THSDataManager* dm=new THSDataManager();
   //dm->SetReadGenBranch("Generated");
-  dm->Init("/w/work1/home/chris/LatestAnalysisRuns/Data/DataDec17ChargedPion/ChrisOutput/Perp/Physics_CBTaggTAPS_14917.root","HSParticles");
+  dm->Init("/w/work1/home/chris/LatestAnalysisRuns/Data/DataDec17ChargedPion/ChrisOutput/Perp/CutTest/Physics_CBTaggTAPS_14917.root","HSParticles");
   //connect Project to HSParticles
   fs->SetDetParts(dm->GetParticles());
   //fs->SetGenParts(dm->GetGenerated());
