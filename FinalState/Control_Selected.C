@@ -3,11 +3,12 @@
 
 
 //Prod Data
-//  HSin("/w/work1/home/chris/LatestAnalysisRuns/Data/DataJul17/ChrisOutput/MixedParaPerp/");
+  HSin("/w/work1/home/chris/LatestAnalysisRuns/Data/DataJul17/ChrisOutput/MixedParaPerp/VertexInfo/");
+//  HSin("/w/work1/home/chris/LatestAnalysisRuns/Data/DataCalibration/ChrisOutput/MixedParaPerp/");
 //  HSin("/w/work1/home/chris/LatestAnalysisRuns/Data/DataJul17/ChrisOutput/MixedParaPerp/Physics_CBTaggTAPS_14962.root");
   
 //Empty Target  
-  HSin("/w/work1/home/chris/LatestAnalysisRuns/Data/DataJul17/ChrisOutput/EmptyTarget/MixedParaPerp/*");
+//  HSin("/w/work1/home/chris/LatestAnalysisRuns/Data/DataJul17/ChrisOutput/EmptyTarget/MixedParaPerp/VertexCut/VertexInfo/*");
 
 
   //optional set ouput directory or file.
@@ -15,10 +16,11 @@
   //file=> 1 total output file
   
 //Prod Data
-//  HSout("/w/work1/home/chris/LatestAnalysisRuns/Data/DataJul17/HaspectOutput/TestMulti/Dev19.0Files20PhysicsAll.root");
+  HSout("/w/work1/home/chris/LatestAnalysisRuns/Data/DataJul17/HaspectOutput/TestMulti/Dev19.0Files20PhysicsAllVertexInfo.root");
+//  HSout("/w/work1/home/chris/LatestAnalysisRuns/Data/DataCalibration/HaspectOutput/ProdData/JUNKDev1.0Files20PhysicsAll.root");
 
 //Empty Target
-  HSout("/w/work1/home/chris/LatestAnalysisRuns/Data/DataJul17/HaspectOutput/EmptyTarget/Dev3.0Files12PhysicsAll.root");
+//  HSout("/w/work1/home/chris/LatestAnalysisRuns/Data/DataJul17/HaspectOutput/EmptyTarget/Dev3.0Files12PhysicsAllVertexInfo.root");
 //  HSMacPath("ADDITIONALMACROPATH_WHEREPROJECTIS");
   HSfinal("THSProj_Pi0N");
   

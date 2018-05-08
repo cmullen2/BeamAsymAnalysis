@@ -14,7 +14,7 @@
  // HSin("/w/work1/home/chris/LatestAnalysisRuns/Sims/SimsOct17/ChrisOutput/Deuterium/PPi0/Physics_A2Geant_DeutNoPol*");
  
 
-  HSout("/w/work1/home/chris/LatestAnalysisRuns/Sims/SimsOct17/HaspectOutput/Deuterium/NPi0/FirstAttempt/");
+  HSout("/w/work1/home/chris/LatestAnalysisRuns/Sims/SimsOct17/HaspectOutput/Deuterium/NPi0/SecondAttempt/");
 
   
 

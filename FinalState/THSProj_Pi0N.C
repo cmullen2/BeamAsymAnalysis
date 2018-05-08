@@ -22,9 +22,9 @@ THSProj_Pi0N::THSProj_Pi0N(){
  
   //Set final state
   fFinal.push_back(&fPhoton);
- // fFinal.push_back(&fProton);
+  fFinal.push_back(&fProton);
 
-  fFinal.push_back(&fNeutron);  //Is this needed for the fGen stuff for the truth values to expect a correct final state and produce correct correlations
+//  fFinal.push_back(&fNeutron);  //Is this needed for the fGen stuff for the truth values to expect a correct final state and produce correct correlations
   //fFinal.push_back(&fPion);
   fFinal.push_back(&fGamma1);
   fFinal.push_back(&fGamma2);
@@ -37,7 +37,7 @@ THSProj_Pi0N::THSProj_Pi0N(){
 
 
 void THSProj_Pi0N::Init_Generated(){
- // return; //THIS LINE IS NEEDED FOR NON SIMULATION DATA
+  return; //THIS LINE IS NEEDED FOR NON SIMULATION DATA
   if(!THSFinalState::frGenParts) return;
   if(THSFinalState::frGenParts->size()!=5) {fGoodEvent=kFALSE;return;}
   //Fill our data member particles
@@ -71,8 +71,8 @@ void THSProj_Pi0N::Init_Generated(){
     //Sets the truth values using the p4 of the particle etc.
     fSpec.SetTruth(frGenParts->at(0));
     fPart.SetTruth(frGenParts->at(1));
-//    fProton.SetTruth(frGenParts->at(1));  //Proton Channel only, what do I do for neutron channel?
-    fNeutron.SetTruth(frGenParts->at(1)); //Neutron Channel?
+    fProton.SetTruth(frGenParts->at(1));  //Proton Channel only, what do I do for neutron channel?
+//    fNeutron.SetTruth(frGenParts->at(1)); //Neutron Channel?
     fGamma1.SetTruth(frGenParts->at(2));
     fGamma2.SetTruth(frGenParts->at(3));
     fPhoton.SetTruth(frGenParts->at(4));
@@ -312,9 +312,9 @@ void THSProj_Pi0N::Kinematics(){
 
 
 //Double for Fitting in Roofit as a binvar
-//fPolStateD = fPhoton.EdgePlane(); FOR PROD DATA
-fPolStateD = -1; // For  Sim Data so that have both polarisation for binning for fitting
-
+fPolStateD = fPhoton.EdgePlane();// FOR PROD DATA
+//fPolStateD = 1; // For  Sim Data so that have both polarisation for binning for fitting  (Need to rerun for +1) DO the same for polstate
+//fPolState = 1; //SIMS
 
 
   //Zero Polarisation 
@@ -353,8 +353,11 @@ else{
   fProduc=fFreeProton + fPhoton.P4() ;
   fWII =fW - fProduc.M() ;
   
-
-
+//PseudoVertex information
+  fPseudoVertexZ = fNucleon->PseudoVertex().Z();
+  fPseudoVertexX = fNucleon->PseudoVertex().X();
+  fPseudoVertexY = fNucleon->PseudoVertex().Y();
+ 
 
   if(std::isnan(fCoplanarity)){
   //  cout << fCoplanarity << " coplan " <<fCMPhi <<" phi " << " Costh " <<  fCosth << endl;// " UID " << UID <<endl;
@@ -425,6 +428,9 @@ void THSProj_Pi0N::FinalStateOutTree(TTree* tree){
   tree->Branch("DCorrect",&fDCorrect,"DCorrect/D"); //Does GenSim match TopoSim
   tree->Branch("SpecMass",&fSpecMass,"SpecMass/D"); //Spectator mass
   tree->Branch("WII",&fWII,"WII/D"); 
+  tree->Branch("PseudoVertexZ",&fPseudoVertexZ,"PseudoVertexZ/D"); 
+  tree->Branch("PseudoVertexX",&fPseudoVertexX,"PseudoVertexX/D"); 
+  tree->Branch("PseudoVertexY",&fPseudoVertexY,"PseudoVertexY/D"); 
 
 
   //Not Needed for Fitting yet
@@ -496,18 +502,18 @@ fGoodEvent=kFALSE;
 }  
   //Check if assigned vectors agree with true generated
   //Simulation only
-  THSFinalState::CheckTruth();
+//  THSFinalState::CheckTruth();
   //SIMS NEXT TWO LINES NEEDED BUT CRASH DATA FILES
-  fGamma1.SetTruth(frGenParts->at(3));
-  fGamma2.SetTruth(frGenParts->at(2));  
+//  fGamma1.SetTruth(frGenParts->at(3));
+//  fGamma2.SetTruth(frGenParts->at(2));  
 
-  THSFinalState::CheckTruth();
+//  THSFinalState::CheckTruth();
 
 
   //For Sims Temporary fix!
-  fDCorrect=fCorrect -1;
+//  fDCorrect=fCorrect -1;
   //For Prod, Emp (Fix this at some stage! Needed so that they give the same value for cuts during fitting)
-  //fDCorrect=fCorrect;
+  fDCorrect=fCorrect;
 
   //Can do some checks if event is worth writing or not
   //if()fGoodEvent=kTRUE;

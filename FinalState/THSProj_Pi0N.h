@@ -111,7 +111,9 @@ class THSProj_Pi0N : public THSFinalState{
   Double_t fDetector=-1;
   Double_t fDCorrect;
   Double_t fWII;
-
+  Double_t fPseudoVertexZ;
+  Double_t fPseudoVertexX;
+  Double_t fPseudoVertexY;
 
 
 //Kinematics Issue so separate for each channel.

@@ -35,11 +35,13 @@ class THSProj_PiMinusP : public THSFinalState{
   //Final Particles
   THSParticle fPim=THSParticle("pi-"); //use PDG code?
   THSParticle fProton=THSParticle("proton");
-  THSParticle fNeutron = THSParticle("neutron");
+  THSParticle fProtonSpec = THSParticle("proton");
   //fGenerated Particles
-  THSParticle fSpec;
-  THSParticle fPart;
- 
+  THSParticle fSpec = THSParticle(2212);
+  THSParticle fPart = THSParticle(2212);
+  THSParticle fPimGen = THSParticle(-211);
+  THSParticle fPhotonGen= THSParticle(-22);
+
   //Observables
   Double_t f_t;
   Double_t f_Q2;
@@ -97,6 +99,14 @@ class THSProj_PiMinusP : public THSFinalState{
   TLorentzVector fMissP4;
   TLorentzVector fProduc;
   TVector3 fPolVec; 
+
+
+//Testing purposes only
+  TLorentzVector fPim4VecB4;
+  TLorentzVector fPim4VecAft;
+
+
+
 
    public :
   virtual void FinalStateOutTree(TTree* tree);

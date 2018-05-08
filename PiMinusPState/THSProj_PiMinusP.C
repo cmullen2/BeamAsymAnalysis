@@ -25,7 +25,7 @@ THSProj_PiMinusP::THSProj_PiMinusP(){
   fFinal.push_back(&fPim);
   fFinal.push_back(&fProton);
   fFinal.push_back(&fPhoton);//Beam
-  fFinal.push_back(&fNeutron);//Spectator
+  //  fFinal.push_back(&fNeutron);//Spectator
 
   //Initialise particle iters
   fDetIter.resize(fNTopo);
@@ -34,7 +34,7 @@ THSProj_PiMinusP::THSProj_PiMinusP(){
 
 
 void THSProj_PiMinusP::Init_Generated(){
-  // return;  //THIS LINE NEEDED FOR PROD DATA
+   return;  //THIS LINE NEEDED FOR PROD DATA
   if(!THSFinalState::frGenParts) return;
   if(THSFinalState::frGenParts->size()!=4) {fGoodEvent=kFALSE;return;}
   //Fill our data member particles
@@ -44,21 +44,24 @@ void THSProj_PiMinusP::Init_Generated(){
     //fElectron=*frGenParts->at(0);
     fSpec = *frGenParts->at(0);
     fPart = *frGenParts->at(1);
-    fPim = *frGenParts->at(2);
-    fPhoton = *frGenParts->at(3);
+    // fProton = *frGenParts->at(1);
+    fPimGen = *frGenParts->at(2);
+    fPhotonGen = *frGenParts->at(3);
 
-	//Is this needed?
-    fProton = fPart;   
+    //Is this needed?
+    //   fProton = fPart;   
   }
   else{//Just assign truth values
     //fElectron.SetTruth(frGenParts->at(0));
     
-    fSpec.SetTruth(frGenParts->at(0));
-    fPart.SetTruth(frGenParts->at(1));
-    fProton.SetTruth(frGenParts->at(1));  //Proton Channel only, what do I do for neutron channel?
-    fPim.SetTruth(frGenParts->at(2));
+    // fSpec.SetTruth(frGenParts->at(0));
+    // fPart.SetTruth(frGenParts->at(1));
+    fProton.SetTruth(frGenParts->at(2));  //Proton Channel only, what do I do for neutron channel?
+    fPim.SetTruth(frGenParts->at(1));
     fPhoton.SetTruth(frGenParts->at(3));
 
+    //cout <<"Truth info 0: "<< frGenParts->at(0)->PDG() <<"Truth info 1: "<< frGenParts->at(1)->PDG() << "Truth info 2: "<< frGenParts->at(2)->PDG() << "Truth info 3: "<< frGenParts->at(3)->PDG() <<  endl;
+    //cout <<"Truth info 0: "<< frGenParts->at(0)->P4().E() <<"Truth info 1: "<< frGenParts->at(1)->P4().E()  <<  endl;
 
   }
 }
@@ -88,7 +91,7 @@ void THSProj_PiMinusP::Topo_0(){
   //Reconstruct missing or combined particles
 
   //Dominik's Energy function (won't be as good due to charged pion energy recon)
-//  fNucleonLabEnergy = CalcQFThreeBodyRecoilPartT(fPhoton.P4.E(), fPim.P4(), fProton.P4(),massTarget,massProton,massNeutron);
+  //  fNucleonLabEnergy = CalcQFThreeBodyRecoilPartT(fPhoton.P4.E(), fPim.P4(), fProton.P4(),massTarget,massProton,massNeutron);
   fCorrectedProtonEnergy = ProtonELossCorrection(fProton.P4p()->Theta(), fProton.P4p()->E());
   fMissNucleon = fPhoton.P4() + fFreeProton - fPim.P4();
 
@@ -104,20 +107,19 @@ void THSProj_PiMinusP::Kinematics(){
     fDetErrs = 0;
   }
 
-//cout << "Hello " << endl;
-//  if(fNucleonLabEnergy<0){
-//    fDomFuncErrs = -1;
-//  }
-//  else{
-//    fDomFuncErrs = 0;
-//  }
+  //  if(fNucleonLabEnergy<0){
+  //    fDomFuncErrs = -1;
+  //  }
+  //  else{
+  //    fDomFuncErrs = 0;
+  //  }
 
-	//Timing
+  //Timing
   fTagTime = fPhoton.Time();
   fPimTime = fPim.Time();
   fProtonTime = fProton.Time();
 
-	//Adjustment for jitter, common start and stop different in Taps vs Ball
+  //Adjustment for jitter, common start and stop different in Taps vs Ball
   if( fProton.Detector()<8)  fProtonTagDiffTime = fProtonTime - fTagTime;
   if( fProton.Detector()>7)  fProtonTagDiffTime = fProtonTime - fTagTime;
   if( fPim.Detector()<8)  fPimTagDiffTime = fPimTime - fTagTime;
@@ -125,26 +127,38 @@ void THSProj_PiMinusP::Kinematics(){
 
 
 
-	//Apply Energy Corrections
+//Testing getting the mass of the pim set correctly
+//  fPimMassB4 = fPim.M();
+  fPim4VecB4 =fPim.P4();
+  fPim.TakePDGMassFromE();
+//  fPimMassAft = fPim.M();
+  fPim4VecAft =fPim.P4();
+
+//Decision to be made on which energy to take
+  fProtonCalcEnergy = CalcQFThreeBodyRecoilPartT(fPhoton.P4.E(), fPim.P4(), fProton.P4(),massTarget,massProton,massProton); //Proton spectator for this channel
+  fPimCalcEnergy = CalcQFThreeBodyRecoilPartT(fPhoton.P4.E(), fProton.P4(), fPim.P4(),massTarget,massProton,massProton); //Proton spectator for this channel
+
+
+  //Apply Energy Corrections
   fNucleonRawEnergy = fProton.P4p()->E();
 
   fProton.P4p()->SetE(fCorrectedProtonEnergy + fProton.PDGMass() );
   if(fDetErrs==0) fProton.TakePDGMassFromE();
 
-//  if(std::isnan(fNucleonLabEnergy) ){
-//    fEnergyErrs = -1;
-//    fProton.P4p()->SetE(fProton.P4p()->E() + fProton->PDGMass() ); //Verify for neutron case!
-//  }
-//  else{
-//    fEnergyErrs = 0;	
-//    fProton.P4p()->SetE(fNucleonLabEnergy + fProton.PDGMass());
-//  }
+  //  if(std::isnan(fNucleonLabEnergy) ){
+  //    fEnergyErrs = -1;
+  //    fProton.P4p()->SetE(fProton.P4p()->E() + fProton->PDGMass() ); //Verify for neutron case!
+  //  }
+  //  else{
+  //    fEnergyErrs = 0;	
+  //    fProton.P4p()->SetE(fNucleonLabEnergy + fProton.PDGMass());
+  //  }
 
-//  if(fDetErrs==0)  fProton.TakePDGMassFromE();   
+  //  if(fDetErrs==0)  fProton.TakePDGMassFromE();   
 
   fNucleonEnergyFinal = fProton.P4p()->E();
 
-	//Reconstruct missing or combined particles
+  //Reconstruct missing or combined particles
   fPimRawEnergy = fPim.P4p()->E();
   fBeamEnergy = fPhoton.P4p()->E();
   fSpectator = fPhoton.P4() + fTarget - fProton.P4() - fPim.P4();
@@ -161,26 +175,26 @@ void THSProj_PiMinusP::Kinematics(){
 
 
 
-	//Tests of angular distributions
+  //Tests of angular distributions
   fProtonPhi = fProton.P4().Phi();
   fProtonTheta = fProton.P4().Theta();
   fPimPhi = fPim.P4().Phi();
   fPimTheta = fPim.P4().Theta();
-  
-	//Detector Tests
+	  
+  //Detector Tests
   fProtonDetector = fProton.Detector();
   fPimDetector = fPim.Detector();
 
-	//Polarisation
+  //Polarisation
   fTaggChannel = fPhoton.Detector();
   fPolState = fPhoton.EdgePlane();
   fPolVec = fPhoton.Vertex();
   fPol = fPolVec.X();
   fPolStateD = fPhoton.EdgePlane();
-//  fPolStateD = -1; // For SIMS
+ // fPolStateD = 1; // For SIMS
 
 
-	//Zero Polarisation
+  //Zero Polarisation
   if(fPol==0){
     fPolErrs = -1;
   }
@@ -188,7 +202,7 @@ void THSProj_PiMinusP::Kinematics(){
     fPolErrs=0;
   }
 
-	//Using Kinematics functions
+  //Using Kinematics functions
   fKine.SetGammaTarget(fPhoton.P4(),fInitialN);
   fKine.SetMesonBaryon(fPim.P4(),fProton.P4());
   fKine.PhotoCMDecay();
@@ -205,6 +219,12 @@ void THSProj_PiMinusP::Kinematics(){
   else{
     fAnyErrs=0;
   }
+
+//  cout << "Particle info Pim" <<  fPim.TruthP4().M() << "Particle info Photon" <<  fPhoton.TruthP4().M() << "Particle info Proton" <<  fProton.TruthP4().M() << endl;
+// cout << "2article info Pim" <<  fPim.PDG() << "Particle info Photon" <<  fPhoton.PDG() << "Particle info Proton" <<  fProton.PDG() << endl;
+// cout << "4article info Pim" <<  fPimGen.PDG() << "Particle info Photon" <<  fPhotonGen.PDG() << "Particle info Proton" <<  fPart.PDG() << "Paricle info Spectator" <<fSpec.PDG()<<  endl;
+// cout << "5article info Pim" <<  fPim.ResTheta() << "Particle info Photon" <<  fPhoton.ResTheta() << "Particle info Proton" <<  fProton.ResTheta() <<  endl;
+// cout << "6article info Pim" <<  fPim.ResPhi() << "Particle info Photon" <<  fPhoton.ResPhi() << "Particle info Proton" <<  fProton.ResPhi() <<  endl;
 
 
 }
@@ -253,6 +273,12 @@ void THSProj_PiMinusP::FinalStateOutTree(TTree* tree){
   tree->Branch("PolStateD",&fPolStateD,"PolStateD/D");
   tree->Branch("PolErrs",&fPolErrs,"PolErrs/D");
 
+//Testing purposes only
+//  tree->Branch("PimMassB4",&fPimMassB4,"PimMassB4/D");
+//  tree->Branch("PimMassAft",&fPimMassAft,"PimMassAft/D");
+  tree->Branch("Pim4VecAft",&fPim4VecAft);
+  tree->Branch("Pim4VecB4",&fPim4VecB4);
+
 
 }
 Bool_t THSProj_PiMinusP::WorkOnEvent(){
@@ -265,7 +291,7 @@ Bool_t THSProj_PiMinusP::WorkOnEvent(){
   else{//Look for reconstructed events
     //if reconstructed Find the detected particles in this event
     if(FindInclusiveTopology(-22)==-1) {fGoodEvent=kFALSE;return fIsPermutating0=kFALSE;}
-//    if(FindTopology()==-1) {fGoodEvent=kFALSE;return fIsPermutating0=kFALSE;}
+    //    if(FindTopology()==-1) {fGoodEvent=kFALSE;return fIsPermutating0=kFALSE;}
     //Do they correspond to a defined topology?
     else if(fCurrTopo==fTID_0) Topo_0();
     // else if(fCurrTopo==fTID_) Topo_();
@@ -282,11 +308,11 @@ Bool_t THSProj_PiMinusP::WorkOnEvent(){
   }
   //Check if assigned vectors agree with true generated
   //Simulation only
-  THSFinalState::CheckTruth();
+//  THSFinalState::CheckTruth();
   
 
-//  fDCorrect = fCorrect -1; //For SIMS may be deprecated!
-  fDCorrect = fCorrect; //For PROD 
+//    fDCorrect = fCorrect -1; //For SIMS may be deprecated!
+    fDCorrect = fCorrect; //For PROD 
 
   //Can do some checks if event is worth writing or not
   //if()fGoodEvent=kTRUE;
