@@ -57,6 +57,7 @@ class THSProj_PiMinusP : public THSFinalState{
   Double_t massTarget=1875.612;
   Double_t massProton=938.272; 
   Double_t massNeutron=939.575;
+  Double_t massPim=139.57;
   Double_t fDetErrs;
   Double_t fDomFuncErrs;
   Double_t fTagTime;
@@ -67,6 +68,9 @@ class THSProj_PiMinusP : public THSFinalState{
   Double_t fNucleonRawEnergy;
   Double_t fEnergyErrs;
   Double_t fNucleonEnergyFinal;
+  Double_t fProtonCalcEnergy;
+  Double_t fPimCalcEnergy;
+  Double_t fPimEnergyFinal;
   Double_t fPimRawEnergy;
   Double_t fBeamEnergy;
   Double_t fPimMassDiff;
@@ -100,10 +104,6 @@ class THSProj_PiMinusP : public THSFinalState{
   TLorentzVector fProduc;
   TVector3 fPolVec; 
 
-
-//Testing purposes only
-  TLorentzVector fPim4VecB4;
-  TLorentzVector fPim4VecAft;
 
 
 

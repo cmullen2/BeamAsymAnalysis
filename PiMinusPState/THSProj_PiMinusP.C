@@ -25,7 +25,6 @@ THSProj_PiMinusP::THSProj_PiMinusP(){
   fFinal.push_back(&fPim);
   fFinal.push_back(&fProton);
   fFinal.push_back(&fPhoton);//Beam
-  //  fFinal.push_back(&fNeutron);//Spectator
 
   //Initialise particle iters
   fDetIter.resize(fNTopo);
@@ -90,8 +89,6 @@ void THSProj_PiMinusP::Init_Iter0(){
 void THSProj_PiMinusP::Topo_0(){
   //Reconstruct missing or combined particles
 
-  //Dominik's Energy function (won't be as good due to charged pion energy recon)
-  //  fNucleonLabEnergy = CalcQFThreeBodyRecoilPartT(fPhoton.P4.E(), fPim.P4(), fProton.P4(),massTarget,massProton,massNeutron);
   fCorrectedProtonEnergy = ProtonELossCorrection(fProton.P4p()->Theta(), fProton.P4p()->E());
   fMissNucleon = fPhoton.P4() + fFreeProton - fPim.P4();
 
@@ -107,12 +104,6 @@ void THSProj_PiMinusP::Kinematics(){
     fDetErrs = 0;
   }
 
-  //  if(fNucleonLabEnergy<0){
-  //    fDomFuncErrs = -1;
-  //  }
-  //  else{
-  //    fDomFuncErrs = 0;
-  //  }
 
   //Timing
   fTagTime = fPhoton.Time();
@@ -126,40 +117,66 @@ void THSProj_PiMinusP::Kinematics(){
   if( fPim.Detector()>7)  fPimTagDiffTime = -fPimTime - fTagTime;
 
 
-
-//Testing getting the mass of the pim set correctly
-//  fPimMassB4 = fPim.M();
-  fPim4VecB4 =fPim.P4();
-  fPim.TakePDGMassFromE();
-//  fPimMassAft = fPim.M();
-  fPim4VecAft =fPim.P4();
-
-//Decision to be made on which energy to take
-  fProtonCalcEnergy = CalcQFThreeBodyRecoilPartT(fPhoton.P4.E(), fPim.P4(), fProton.P4(),massTarget,massProton,massProton); //Proton spectator for this channel
-  fPimCalcEnergy = CalcQFThreeBodyRecoilPartT(fPhoton.P4.E(), fProton.P4(), fPim.P4(),massTarget,massProton,massProton); //Proton spectator for this channel
-
-
-  //Apply Energy Corrections
+  fPimRawEnergy = fPim.P4p()->E();
   fNucleonRawEnergy = fProton.P4p()->E();
 
+
+//Apply Mikhail's energy correction to the Proton so can use in Doms function to calculate pim 4vec
   fProton.P4p()->SetE(fCorrectedProtonEnergy + fProton.PDGMass() );
+
+//Decision to be made on which energy to take, calc proton from pim or calc pim from proton
+  fProtonCalcEnergy = CalcQFThreeBodyRecoilPartT(fPhoton.P4().E(), fPim.P4(), fProton.P4(),massTarget,massProton,massProton); //Proton spectator for this channel
+
+
+//Check Dom's function worked correctly
+  if(fProtonCalcEnergy<0){
+    fDomFuncErrs = -1;
+  }
+  else{
+    fDomFuncErrs = 0;
+  }
+
+  if(std::isnan(fProtonCalcEnergy)){
+    fEnergyErrs = -1;
+
+  }
+  else{
+    fEnergyErrs = 0;
+    fProton.P4p()->SetE(fProtonCalcEnergy + fProton.PDGMass() );
+
+  }
+
+
   if(fDetErrs==0) fProton.TakePDGMassFromE();
 
-  //  if(std::isnan(fNucleonLabEnergy) ){
-  //    fEnergyErrs = -1;
-  //    fProton.P4p()->SetE(fProton.P4p()->E() + fProton->PDGMass() ); //Verify for neutron case!
-  //  }
-  //  else{
-  //    fEnergyErrs = 0;	
-  //    fProton.P4p()->SetE(fNucleonLabEnergy + fProton.PDGMass());
-  //  }
 
-  //  if(fDetErrs==0)  fProton.TakePDGMassFromE();   
+/*  fPimCalcEnergy = CalcQFThreeBodyRecoilPartT(fPhoton.P4.E(), fProton.P4(), fPim.P4(),massTarget,massPim,massProton); //Proton spectator for this channel
+  if(fPimCalcEnergy<0){
+    fDomFuncErrs = -1;
+  }
+  else{
+    fDomFuncErrs = 0;
+  }
+
+  if(std::isnan(fPimCalcEnergy)){
+    fEnergyErrs = -1; 
+    
+  }
+  else{
+    fEnergyErrs = 0;
+    fPim.P4p()->SetE(fPimCalcEnergy + fPim.PDGMass() );
+
+  }
+  
+  if(fDetErrs==0) fProton.TakePDGMassFromE();
+  fPim.TakePDGMassFromE();
+
+*/
 
   fNucleonEnergyFinal = fProton.P4p()->E();
-
+  fPimEnergyFinal = fPim.P4p()->E();
+  
   //Reconstruct missing or combined particles
-  fPimRawEnergy = fPim.P4p()->E();
   fBeamEnergy = fPhoton.P4p()->E();
   fSpectator = fPhoton.P4() + fTarget - fProton.P4() - fPim.P4();
   fPimMassDiff = (TDatabasePDG::Instance()->GetParticle(-211)->Mass()) *1000 - fPim.P4p()->M();
@@ -260,6 +277,7 @@ void THSProj_PiMinusP::FinalStateOutTree(TTree* tree){
   tree->Branch("NucleonRawEnergy",&fNucleonRawEnergy,"NucleonRawEnergy/D");
   tree->Branch("NucleonEnergyFinal",&fNucleonEnergyFinal,"NucleonEnergyFinal/D");
   tree->Branch("PimRawEnergy",&fPimRawEnergy,"PimRawEnergy/D");
+  tree->Branch("PimEnergyFinal",&fPimEnergyFinal,"PimEnergyFinal/D");
   tree->Branch("PimMassDiff",&fPimMassDiff,"PimMassDiff/D");
   tree->Branch("ConePhi",&fConePhi,"ConePhi/D");
   tree->Branch("ProtonPhi",&fProtonPhi,"ProtonPhi/D");
@@ -273,11 +291,6 @@ void THSProj_PiMinusP::FinalStateOutTree(TTree* tree){
   tree->Branch("PolStateD",&fPolStateD,"PolStateD/D");
   tree->Branch("PolErrs",&fPolErrs,"PolErrs/D");
 
-//Testing purposes only
-//  tree->Branch("PimMassB4",&fPimMassB4,"PimMassB4/D");
-//  tree->Branch("PimMassAft",&fPimMassAft,"PimMassAft/D");
-  tree->Branch("Pim4VecAft",&fPim4VecAft);
-  tree->Branch("Pim4VecB4",&fPim4VecB4);
 
 
 }
