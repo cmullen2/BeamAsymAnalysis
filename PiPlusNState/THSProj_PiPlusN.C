@@ -122,8 +122,8 @@ void THSProj_PiPlusN::Kinematics(){
   fNeutronTime = fNeutron.Time();
 
         //Adjustment for jitter, common start and stop different in Taps vs Ball
-  if( fNeutron.Detector()<8)  fNeutronTagDiffTime = fProtonTime - fTagTime;
-  if( fNeutron.Detector()>7)  fNeutronTagDiffTime = fNeutronTime - fTagTime;
+  if( fNeutron.Detector()<8)  fNeutronTagDiffTime = fNeutronTime - fTagTime;
+  if( fNeutron.Detector()>7)  fNeutronTagDiffTime = -fNeutronTime - fTagTime;
   if( fPip.Detector()<8)  fPipTagDiffTime = fPipTime - fTagTime;
   if( fPip.Detector()>7)  fPipTagDiffTime = -fPipTime - fTagTime;
 
