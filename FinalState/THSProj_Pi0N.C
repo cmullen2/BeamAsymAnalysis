@@ -263,7 +263,9 @@ void THSProj_Pi0N::Kinematics(){
   fSpectator=fPhoton.P4() +  fTarget - fNucleon->P4() -fPion.P4(); //Is this correct????
   fM2gamma= (TDatabasePDG::Instance()->GetParticle(111)->Mass())*1000  - fPion.P4p()->M(); //in MeV now //MassDiff(); //Need to convert to MeV the pdg mass
   fMissP4=fPhoton.P4() + fTarget - fPion.P4();
-  fMissMass=fMissP4.M() ;
+  fMissMass=fMissP4.M();
+  fMissPionP4 = fPhoton.P4() +fTarget -fNucleon->P4();
+  fMissMassPion = fMissPionP4.M();
   fInvMass=fPion.P4p()->M();   //MeasMass();
 
   fSpecMass=fSpectator.M();
@@ -313,8 +315,8 @@ void THSProj_Pi0N::Kinematics(){
 
 //Double for Fitting in Roofit as a binvar
 fPolStateD = fPhoton.EdgePlane();// FOR PROD DATA
-//fPolStateD = 1; // For  Sim Data so that have both polarisation for binning for fitting  (Need to rerun for +1) DO the same for polstate
-//fPolState = 1; //SIMS
+//fPolStateD = -1; // For  Sim Data so that have both polarisation for binning for fitting  (Need to rerun for +1) DO the same for polstate
+//fPolState = -1; //SIMS
 
 
   //Zero Polarisation 
@@ -358,6 +360,38 @@ else{
   fPseudoVertexX = fNucleon->PseudoVertex().X();
   fPseudoVertexY = fNucleon->PseudoVertex().Y();
  
+
+
+/*
+//MWPC hits and Cx analysis first attempt
+  fChamber1Vec.SetXYZ(fNucleon->MWPC0Hits.X(),fNucleon->MWPC0Hits.Y(),fNucleon->MWPC0Hits.Z()); //Vector of tvector3's so need to loop something here
+  fChamber2Vec.SetXYZ(fNucleon->MWPC1Hits.X(),fNucleon->MWPC1Hits.Y(),fNucleon->MWPC1Hits.Z());
+
+  if( fChamber1Vec.X()==0 && fChamber2Vec.X()==0 && fChamber1Vec.Y()==0 && fChamber2Vec.Y()==0 && fChamber1Vec.Z==0 && fChamber2Vec.Z==0){
+    fChamberErrs=-1;
+
+  }
+
+  else{
+  fChamberErrs=0;
+
+  }
+
+//No rotation of MWPC0 yet needs to be determined by the phi of mwpcs from earlier in analysis.
+//Add these to and errs to output then add function to .h
+
+  fNucleonVec1 =  fChamber1Vec - fTargetVec ;
+  fNucleonVec2 =  fChamber2Vec - fChamber1Vec;
+ 
+  fNucleonScatAngleb4Trans = (fNucleonVec1.Angle(fNucleonVec2))*TMath::RadToDeg();
+  fScatVec = ScatteredVector(fNucleonVec1,fNucleonVec2);
+  fNucleonScatPhi = fScatVec.Phi()*TMath::RadToDeg();
+  fNucleonScatTheta = fScatVec.Theta()*TMath::RadToDeg() ;
+
+*/
+
+
+
 
   if(std::isnan(fCoplanarity)){
   //  cout << fCoplanarity << " coplan " <<fCMPhi <<" phi " << " Costh " <<  fCosth << endl;// " UID " << UID <<endl;
@@ -432,6 +466,12 @@ void THSProj_Pi0N::FinalStateOutTree(TTree* tree){
   tree->Branch("PseudoVertexX",&fPseudoVertexX,"PseudoVertexX/D"); 
   tree->Branch("PseudoVertexY",&fPseudoVertexY,"PseudoVertexY/D"); 
 
+/*  //C_x Stuff
+  tree->Branch("ChamberErrs",&fChamberErrs,"ChamberErrs/D"); 
+  tree->Branch("NucleonScatAngleb4Trans",&fNucleonScatAngleb4Trans,"NucleonScatAngleb4Trans/D"); 
+  tree->Branch("NucleonScatPhi",&fNucleonScatPhi,"NucleonScatPhi/D"); 
+  tree->Branch("NucleonScatTheta",&fNucleonScatTheta,"NucleonScatTheta/D"); 
+*/
 
   //Not Needed for Fitting yet
   //  tree->Branch("M2gamma",&fM2gamma,"M2gamma/D");  
@@ -499,13 +539,18 @@ Bool_t THSProj_Pi0N::WorkOnEvent(){
 if(fGammaAveTagDiffTime<-100 || fGammaAveTagDiffTime>100){
 fGoodEvent=kFALSE;
 
-}  
+}
+//if(fPseudoVertexZ<0 || fPseudoVertexZ>80){
+//fGoodEvent=kFALSE;
+
+//}
+  
   //Check if assigned vectors agree with true generated
   //Simulation only
 //  THSFinalState::CheckTruth();
   //SIMS NEXT TWO LINES NEEDED BUT CRASH DATA FILES
-//  fGamma1.SetTruth(frGenParts->at(3));
-//  fGamma2.SetTruth(frGenParts->at(2));  
+  fGamma1.SetTruth(frGenParts->at(3));
+  fGamma2.SetTruth(frGenParts->at(2));  
 
 //  THSFinalState::CheckTruth();
 

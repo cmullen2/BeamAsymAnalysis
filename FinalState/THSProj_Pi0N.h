@@ -62,6 +62,7 @@ class THSProj_Pi0N : public THSFinalState{
 
   //Discriminators
   Double_t fMissMass=0;
+  Double_t fMissMassPion=0; 
   Double_t fM2gamma=0;
   Double_t fInvMass=0;
   Double_t fSpecMass=0;
@@ -115,6 +116,19 @@ class THSProj_Pi0N : public THSFinalState{
   Double_t fPseudoVertexX;
   Double_t fPseudoVertexY;
 
+//For C_x and MWPC
+  TVector3 fTargetVec;
+  TVector3 fChamber1Vec;
+  TVector3 fChamber2Vec;
+  TVector3 fNucleonVec1;
+  TVector3 fNucleonVec2;
+
+  Double_t fNucleonScatAngleb4Trans;
+  TVector3 fScatVec;
+  Double_t fNucleonScatPhi;
+  Double_t fNucleonScatTheta;
+  Double_t fChamberErrs;
+
 
 //Kinematics Issue so separate for each channel.
 //  Double_t fCMPhiTopoNeut;
@@ -131,6 +145,7 @@ class THSProj_Pi0N : public THSFinalState{
   //Additional 4-Vectors
   TLorentzVector fSpectator;
   TLorentzVector fMissP4;
+  TLorentzVector fMissPionP4;
   TLorentzVector fNuclvec;
   TLorentzVector fPionvec;
   TLorentzVector fMissNucleon;
@@ -164,6 +179,37 @@ TLorentzVector AftMikNucleon;
 
    public :
   virtual void FinalStateOutTree(TTree* tree);
+
+  //______________________________________________________________________________
+
+
+TVector3 ScatteredVector(TVector3 v_inc,TVector3 v_sc){
+  TVector3 XLAB(1,0,0);
+  TVector3 YLAB(0,1,0);
+  TVector3 ZLAB(0,0,1);
+
+  //Define primed frame
+  TVector3 Zprime=v_inc.Unit();//Nucleon momentum direction
+  TVector3 Yprime=ZLAB.Cross(-v_inc);//BeamXpi momentum or protonXbeam
+  Yprime=Yprime.Unit();
+  TVector3 Xprime=Yprime.Cross(Zprime);
+  Xprime=Xprime.Unit();
+
+   //Make rotation matrix
+  Double_t Drot[3][3];
+  Drot[0][0]=XLAB.Dot(Xprime);Drot[1][0]=YLAB.Dot(Xprime);Drot[2][0]=ZLAB.Dot(Xprime);
+  Drot[0][1]=XLAB.Dot(Yprime);Drot[1][1]=YLAB.Dot(Yprime);Drot[2][1]=ZLAB.Dot(Yprime);
+  Drot[0][2]=XLAB.Dot(Zprime);Drot[1][2]=YLAB.Dot(Zprime);Drot[2][2]=ZLAB.Dot(Zprime);
+  //Calculate new coordinates
+  TVector3 v_scat; 
+  v_scat.SetX(Drot[0][0]*v_sc.X()+Drot[1][0]*v_sc.Y()+Drot[2][0]*v_sc.Z());
+  v_scat.SetY(Drot[0][1]*v_sc.X()+Drot[1][1]*v_sc.Y()+Drot[2][1]*v_sc.Z());
+  v_scat.SetZ(Drot[0][2]*v_sc.X()+Drot[1][2]*v_sc.Y()+Drot[2][2]*v_sc.Z());
+  return v_scat;
+
+}
+
+
 
   //______________________________________________________________________________
   Double_t ProtonELossCorrection(Double_t ProtTheta, Double_t NaIDeposit)
